@@ -23,7 +23,7 @@ jobs:
       - name: Run full rebuild
         env:
           POLYGON_API_KEY: ${{ secrets.POLYGON_API_KEY }}
-        run: python process_stocks.py
+        run: python process_ranks_full.py
       
       - name: Commit and push changes
         run: |
