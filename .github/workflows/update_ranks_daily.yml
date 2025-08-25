@@ -33,7 +33,7 @@ jobs:
         if: steps.check-historical.outputs.has_historical == 'true'
         env:
           POLYGON_API_KEY: ${{ secrets.POLYGON_API_KEY }}
-        run: python process_stocks_daily.py
+        run: python process_ranks_daily.py
       
       - name: Skip update (if no historical data)
         if: steps.check-historical.outputs.has_historical == 'false'
