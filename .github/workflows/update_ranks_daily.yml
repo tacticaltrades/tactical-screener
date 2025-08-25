@@ -1,4 +1,4 @@
-name: Daily Quick Update
+name: Rankings Daily Update
 
 on:
   schedule:
