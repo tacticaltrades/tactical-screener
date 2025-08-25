@@ -8,11 +8,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Show files
+      - name: Show detailed file info
         run: |
-          echo "Current directory:"
-          pwd
-          echo "Files here:"
+          echo "All files with extensions:"
           ls -la
-          echo "Python files:"
-          ls -la *.py || echo "No Python files found"
+          echo "---"
+          echo "Files containing 'process':"
+          ls -la *process*
+          echo "---" 
+          echo "Try running the files directly:"
+          python process_ranks_full || echo "Failed without .py"
+          python process_ranks_full.py || echo "Failed with .py"
