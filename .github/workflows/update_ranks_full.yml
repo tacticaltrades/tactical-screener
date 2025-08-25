@@ -1,14 +1,23 @@
-name: Rankings Daily Update
+name: Rankings Full Rebuild
 on:
   schedule:
-    - cron: '30 21 * * 1-4'   # Mon-Thu 4:30 PM ET = daily update only
-  workflow_dispatch:          # Manual trigger for daily update
+    - cron: '30 21 * * 5'     # Friday 4:30 PM ET = full rebuild only
+  workflow_dispatch:          # Manual trigger for full rebuild
 
 jobs:
-  daily-update:
+  full-rebuild:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Debug - Show current directory and files
+        run: |
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          echo "Current directory: $(pwd)"
+          echo "Files in current directory:"
+          ls -la
+          echo "Looking for Python files:"
+          find . -name "*.py" -type f
       
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -19,34 +28,16 @@ jobs:
         run: |
           pip install requests pandas numpy
       
-      - name: Check if historical data exists
-        id: check-historical
-        run: |
-          if [ -f "historical_data.json" ]; then
-            echo "has_historical=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_historical=false" >> $GITHUB_OUTPUT
-          fi
-      
-      - name: Run daily update (if historical data exists)
-        if: steps.check-historical.outputs.has_historical == 'true'
+      - name: Run full rebuild
         env:
           POLYGON_API_KEY: ${{ secrets.POLYGON_API_KEY }}
         working-directory: ${{ github.workspace }}
-        run: python process_ranks_daily.py
+        run: python process_ranks_full.py
       
-      - name: Skip update (if no historical data)
-        if: steps.check-historical.outputs.has_historical == 'false'
-        run: |
-          echo "No historical data found. Skipping daily update."
-          echo "Full rebuild will run on Friday or can be triggered manually."
-          exit 0
-      
-      - name: Commit and push
-        if: steps.check-historical.outputs.has_historical == 'true'
+      - name: Commit and push changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add rankings.json historical_data.json
-          git commit -m "Daily update $(date)" || exit 0
+          git commit -m "Full rebuild $(date)" || exit 0
           git push
