@@ -1,0 +1,34 @@
+name: Rankings Full Rebuild
+
+on:
+  schedule:
+    - cron: '30 21 * * 5'     # Friday 4:30 PM ET = full rebuild only
+  workflow_dispatch:          # Manual trigger for full rebuild
+
+jobs:
+  full-rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install requests pandas numpy
+      
+      - name: Run full rebuild
+        env:
+          POLYGON_API_KEY: ${{ secrets.POLYGON_API_KEY }}
+        run: python process_stocks.py
+      
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add rankings.json historical_data.json
+          git commit -m "Full rebuild $(date)" || exit 0
+          git push
